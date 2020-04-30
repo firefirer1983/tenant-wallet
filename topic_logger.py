@@ -3,9 +3,12 @@ from pika import BlockingConnection
 from pika.credentials import PlainCredentials
 from pika.connection import ConnectionParameters
 
-
-rkey = sys.argv[1]
-msg = " ".join(sys.argv[2:])
+if len(sys.argv) > 1:
+    rkey = sys.argv[1] or "error"
+    msg = " ".join(sys.argv[2:]) or "shit happen!"
+else:
+    rkey = "error"
+    msg = "shit happen!"
 
 connection = BlockingConnection(
     parameters=ConnectionParameters(

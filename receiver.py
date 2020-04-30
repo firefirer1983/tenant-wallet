@@ -1,22 +1,25 @@
-import sys
 from pika import BlockingConnection
-from pika.credentials import PlainCredentials
-from pika.connection import ConnectionParameters
+from pika.connection import URLParameters
 
 
 connection = BlockingConnection(
-    parameters=ConnectionParameters(
-        host="localhost",
-        credentials=PlainCredentials(username="user", password="bitnami"),
-    )
+    parameters=URLParameters("amqp://guest:guest@192.168.77.6:5672/%2F")
 )
-binding_key = sys.argv[1:]
 ch = connection.channel()
-ch.exchange_declare(exchange="topic_log", exchange_type="topic")
-result = ch.queue_declare("", exclusive=True)
-qname = result.method.queue
+ch.exchange_declare(exchange="tenant.chain.action.tx", exchange_type="topic")
+ch.exchange_declare(
+    exchange="tenant.chain.action.address", exchange_type="topic"
+)
+ch.exchange_declare(
+    exchange="tenant.chain.commodity.action.chaintask", exchange_type="topic"
+)
+ch.queue_declare("tenant_chain_action_q", exclusive=True)
 
-ch.queue_bind(exchange="topic_log", routing_key=binding_key)
+ch.queue_bind(
+    queue="tenant_chain_action_q",
+    exchange="tenant.chain.action.tx",
+    routing_key="*.*.",
+)
 
 
 def cb(channel, method, properties, body):

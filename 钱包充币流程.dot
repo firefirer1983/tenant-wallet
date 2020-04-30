@@ -1,0 +1,50 @@
+digraph withdraw_flow_graph {
+
+    database[shape="cylinder" label="数据库"]
+    mq [shape="Mrecord" label="{消息队列|<tx>新交易|<deposit_task>充币请求|<tx_status>交易状态|<confirm_tx>交易确认请求}"]
+    notifier [label="商户通知服务"]
+    blockchain [label="区块链"]
+    deposit_discover [shape="rect", label="充币交易发现服务"]
+    poll_worker [shape="rect", label="交易状态确认服务"]
+    address_manager [label="商户地址管理器"]
+    deposit_registry [label="充币服务"]
+    bloomer_filter [label="布隆过滤器"]
+
+    deposit_discover -> blockchain [label="区块解析", style=dotted]
+    poll_worker -> blockchain [label="区块解析", style=dotted]
+    deposit_discover -> mq:tx [label="发现新交易消息"]
+    mq:tx -> bloomer_filter [label="过滤器根据入金地址过滤"]
+    bloomer_filter -> mq:deposit_task [label="疑似充币请求"]
+    deposit_discover -> mq:bloomer_filter [label= "交易根据充币地址进行过滤"]
+    
+    mq:deposit_task -> deposit_registry [label="请求充值"]
+    deposit_registry -> database [label="充值确认"]
+    database -> deposit_registry [label="查询所有未确认充值"]
+    deposit_registry -> mq:confirm_tx [label="请求确认充值状态"]
+    mq:confirm_tx -> poll_worker [label="查询交易状态"]
+    poll_worker -> mq:tx_status
+    mq:tx_status -> deposit_registry [label="更新交易状态"]
+    mq:tx_status -> notifier [label="通知商户交易状态更改"]
+    address_manager -> bloomer_filter[label="更新商户地址", style=dotted]
+
+
+    subgraph cluster_tx {
+        //label = "提币交易状态消息内部详情"
+ 
+        // tx_message [shape="egg" label="交易状态消息"]
+        // tx_message_request_id [shape="egg" label="任务请求id"]
+        // tx_message_status [shape="egg" label="状态:成功/失败/确认中"]
+        // tx_message_confirm [shape="egg" label="确认数"]
+        // tx_message_tx [shape="egg" label="交易id"]
+        // tx_message_payload [shape="egg" label="其它携带数据"]
+        // tx_message -> {tx_message_request_id, tx_message_status, tx_message_confirm, tx_message_tx, tx_message_payload} [label="包含" style="dotted"]
+
+        tx_message [shape="Mrecord" label="{交易状态消息:|任务请求id|状态:成功/失败/确认中|确认数|交易id|其它携带数据}"]
+    }
+
+    
+    
+    { rank=min; poll_worker; deposit_discover; blockchain;}
+    // { rank=min; core; tx_worker;}
+}
+
