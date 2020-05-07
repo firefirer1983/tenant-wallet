@@ -16,7 +16,7 @@ digraph withdraw_flow_graph {
     mq:tx -> bloomer_filter [label="过滤器根据入金地址过滤"]
     bloomer_filter -> mq:deposit_task [label="疑似充币请求"]
     deposit_discover -> mq:bloomer_filter [label= "交易根据充币地址进行过滤"]
-    
+     
     mq:deposit_task -> deposit_registry [label="请求充值"]
     deposit_registry -> database [label="充值确认"]
     database -> deposit_registry [label="查询所有未确认充值"]

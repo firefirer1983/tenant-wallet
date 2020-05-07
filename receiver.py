@@ -12,18 +12,13 @@ connection = BlockingConnection(
     parameters=URLParameters("amqp://guest:guest@localhost:5672/%2F")
 )
 ch = connection.channel()
-ch.exchange_declare(exchange="tenant.chain.action.tx", exchange_type="topic")
-ch.exchange_declare(
-    exchange="tenant.chain.action.address", exchange_type="topic"
-)
-ch.exchange_declare(
-    exchange="tenant.chain.commodity.action.chaintask", exchange_type="topic"
-)
+ch.exchange_declare(exchange="tenant.chain.action.chain_task", exchange_type="topic")
+
 ch.queue_declare("tenant_chain_action_q")
 
 ch.queue_bind(
     queue="tenant_chain_action_q",
-    exchange="tenant.chain.action.tx",
+    exchange="tenant.chain.action.chain_task",
     routing_key="*.*.*",
 )
 

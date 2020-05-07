@@ -20,7 +20,7 @@ ch = connection.channel()
 #     exchange="tenant.chain.commodity.action.chaintask", exchange_type="topic"
 # )
 ch.basic_publish(
-    exchange="tenant.chain.action.tx",
-    routing_key="EGamer.eth.explore",
+    exchange="tenant.chain.action.chain_task",
+    routing_key="EGamer.eth.txcheck",
     body=pickle.dumps(Msg("Hello world!")),
 )
